@@ -1,5 +1,7 @@
 package br.com.dlbca.hibernate.memcached.duration;
 
+import org.hibernate.cache.spi.entry.CacheEntry;
+
 import br.com.dlbca.hibernate.memcached.annotations.CacheDuration;
 import br.com.dlbca.hibernate.memcached.strategy.AbstractReadWriteMemcachedAccessStrategy.Item;
 
@@ -15,8 +17,8 @@ import br.com.dlbca.hibernate.memcached.strategy.AbstractReadWriteMemcachedAcces
 public class CacheDurationDefiner {
 	
 	public static Integer getDurationFor(Object object){
-		Item item = (Item) object;
-		CacheDuration cacheDuration = getCacheDurationAnnotation(item);
+		String subclassName = getSubclassFromValueOf(object);
+		CacheDuration cacheDuration = getCacheDurationAnnotation(subclassName);
 		
 		if(cacheDuration == null || cacheDuration.value() == 0) {
 			return null;
@@ -25,12 +27,22 @@ public class CacheDurationDefiner {
 		return cacheDuration.value();
 	}
 
-	private static CacheDuration getCacheDurationAnnotation(Item item) {
+	private static CacheDuration getCacheDurationAnnotation(String subclassName) {
 		try {
-			Class<?> subclass = Class.forName(item.getSubclass());
+			Class<?> subclass = Class.forName(subclassName);
 			return subclass.getAnnotation(CacheDuration.class);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	private static String getSubclassFromValueOf(Object object){
+		if(object instanceof Item){
+			return ((Item) object).getSubclass();
+		} else if(object instanceof CacheEntry){
+			return ((CacheEntry) object).getSubclass();
 		}
 		
 		return null;
