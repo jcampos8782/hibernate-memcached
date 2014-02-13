@@ -20,6 +20,7 @@ implements EntityRegionAccessStrategy {
 	}
 
 	public void unlockItem(Object key, SoftLock lock) throws CacheException {
+		region.remove(key);
 	}
 
 	public EntityRegion getRegion() {
@@ -28,7 +29,6 @@ implements EntityRegionAccessStrategy {
 
 	@Override
 	public boolean update(Object key, Object value, Object currentVersion, Object previousVersion) throws CacheException {
-		region.remove(key);
 		return true;
 	}
 	
